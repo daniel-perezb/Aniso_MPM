@@ -1,0 +1,4 @@
+Youngs: 20000
+nu: 0.4
+rho: 500
+residual_stress = 0.005
