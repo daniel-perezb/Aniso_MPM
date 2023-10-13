@@ -8,7 +8,7 @@ project(ZIRAN CXX)
 message(STATUS "${CMAKE_BUILD_TYPE} Build")
 
 #############################################################################
-option(ENABLE_AMGCL_CUDA "Use amgcl cuda" ON)
+option(ENABLE_AMGCL_CUDA "Use amgcl cuda" OFF)
 #############################################################################
 
 if (ENABLE_AMGCL_CUDA)
