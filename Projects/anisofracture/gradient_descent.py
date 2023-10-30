@@ -1,88 +1,130 @@
 import subprocess
-import time
 import os
+import time
 import numpy as np
+from mse import calculate_mse
 
-# Create a flag file to signal the C++ process to stop
-flag_file_path = 'stop_flag.txt'
-open(flag_file_path, 'w').close()
+class Animation:
+    def __init__(self):
+        self.cpp_process = None
+        self.output_folder = "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/"
+        self.target_file = "data_{}.dat"  # Specify the target file pattern
+        self.target_file_number = 0  # Initialize the target file number
 
-# Start the C++ code
-cpp_process = subprocess.Popen(["./anisofracture", "-test", "8"])
+    def start_cpp_process(self):
+        self.target_file = "data_{}.dat".format(self.target_file_number)
+        self.cpp_process = subprocess.Popen([
+            "/Fibre_directions/Aniso_MPM/Projects/anisofracture/./anisofracture",
+            "-test", "8"
+        ])
+        # self.target_file_number += 2  # Increment the target file number
 
-# Define a function to check the condition
-def check_condition():
-    # Implement your condition-checking logic here
-    # For example, you can run your point comparison or other code
+    def stop_cpp_process(self):
+        if self.cpp_process and self.cpp_process.poll() is None:
+            self.cpp_process.terminate()
     
-    # Return True if condition is satisfied, False otherwise
-    return True
+    def run(self):
+        self.start_cpp_process()
+        print("Started C++ process")
+        self.cpp_process.wait()
+        print("C++ process finished")
 
-def cleanup():
-    # Remove the flag file to signal the C++ process to stop
-    if os.path.exists(flag_file_path):
-        os.remove(flag_file_path)
+'''
+    def run(self):
+        run_code = True
+        while run_code:
+            self.start_cpp_process()
+            print("Started C++ process for {}".format(self.target_file))
+            while True:
+                # Check if the target file exists
+                if os.path.exists(os.path.join(self.output_folder, self.target_file)):
+                    message = 'Target file "{}" found. Stopping the C++ process...'.format(self.target_file)
+                    print(message)
+                    self.stop_cpp_process()
+                    break  # Exit the inner loop when the target file is found
+                    run_code = False
+                time.sleep(0.5)  # Adjust the polling interval as needed
+'''
 
-# Function to update values in 'parameters.txt'
-def update_parameters_file():
-    with open('parameters.txt', 'r') as file:
-        lines = file.readlines()
+def read_parameters(filepath="/Fibre_directions/Aniso_MPM/Projects/anisofracture/parameters.txt"):
+    params = {}
+    with open(filepath, 'r') as f:
+        for line in f:
+            key, value = line.split(":")
+            params[key.strip()] = float(value.strip())
+    return params
 
-    # Modify the values as needed based on your condition
-    # For example, let's say you want to change Youngs to 25000 if the condition is not satisfied
-    if not check_condition():
-        for i in range(len(lines)):
-            if 'Youngs:' in lines[i]:
-                lines[i] = 'Youngs: 25000\n'
+def write_parameters(params, filepath="/Fibre_directions/Aniso_MPM/Projects/anisofracture/parameters.txt"):
+    with open(filepath, 'w') as f:
+        for key, value in params.items():
+            f.write("{}: {}\n".format(key, value))
 
-    # Write the updated contents back to the file
-    with open('parameters.txt', 'w') as file:
-        file.writelines(lines)
+def compute_mse():
+    dataFilePath = "/Fibre_directions/Aniso_MPM/Data/TetMesh/mesh_files/data.txt"
+    logicFilePath = "/Fibre_directions/Aniso_MPM/Data/TetMesh/mesh_files/visibles.txt"
+    scaleFilePath = "/Fibre_directions/Aniso_MPM/Data/TetMesh/mesh_files/scale_values.txt"
+    directory = "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/"
+    mse = calculate_mse(dataFilePath, logicFilePath, scaleFilePath, directory)
+    return mse
+
+def compute_gradient(animation, epsilon=1e-5):
+    initial_params = read_parameters()
+    initial_mse = compute_mse()
+    
+    gradients = {}
+    for param in initial_params:
+        perturbed_params = initial_params.copy()
+        perturbed_params[param] += epsilon
+        write_parameters(perturbed_params)
+        animation.run()
+        perturbed_mse = compute_mse()
+
+        gradient = (perturbed_mse - initial_mse) / epsilon
+        gradients[param] = gradient
+
+    return gradients
+
+if __name__ == '__main__':
+    animation = Animation()
+    learning_rate = .001
+    iterations = 10
+    mse_history = []
 
 
-def video_variables():
-    with open('/ziran2020/Data/TetMesh/mesh_files/visibles.txt', 'r') as file:
-        visible_lines = file.readlines()
-        values = [line.strip().split() for line in visible_lines]  # Use visible_lines
+    # Define scaling factors for each parameter
+    
+    scaling_factors = {
+        'Youngs': 50000000,
+        'nu': 500,
+        'rho': 200000,
+        'residual_stress': 10
+    }
 
-    # Convert values to float
-    values = [[float(val) for val in row] for row in values]
+    for _ in range(iterations):
+        gradients = compute_gradient(animation)
+        params = read_parameters()
+        for param, gradient in gradients.items():
+            params[param] -= learning_rate * gradient
+            #update_amount = learning_rate * gradient * scaling_factors[param]
+            #params[param] -= update_amount
+        write_parameters(params)
+        mse = compute_mse()
+        mse_history.append(mse)
+        with open('/Fibre_directions/Aniso_MPM/Projects/anisofracture/all_mse.txt', 'w') as f:
+        for grad_value in mse_history:
+            f.write(str(mse_value) + '\n')
+    
 
-    # Convert the list of lists to a NumPy array
-    visible_array = np.array(values)  
-
-    with open('/ziran2020/Data/TetMesh/mesh_files/data.txt', 'r') as file:
-        data_lines = file.readlines()
-        data_values = [line.strip().split() for line in data_lines]  # Use data_lines
-
-    # Convert values to float
-    data_values = [[float(val) for val in row] for row in data_values]
-
-    # Convert the list of lists to a NumPy array
-    data_array = np.array(data_values)  
-
-
-
-# Open the data and variables
-video_variables()
-
-try:
-    while True:
-        if not check_condition():
-            # Condition is not satisfied, so signal the C++ process to stop
-            with open(flag_file_path, 'w') as flag_file:
-                flag_file.write('stop')
-            update_parameters_file()
-            break
-
-        # Optional: Add a delay to control how often you check the condition
-        time.sleep(1)
-
-except KeyboardInterrupt:
-    # Handle Ctrl+C if needed
-    pass
-finally:
-    cleanup()
-
-# Wait for the C++ process to finish (if needed)
-cpp_process.wait()
+    
+    with open('/Fibre_directions/Aniso_MPM/Projects/anisofracture/all_mse.txt', 'w') as f:
+        for mse_value in mse_history:
+            f.write(str(mse_value) + '\n')
+    
+    print("Yet")
+    
+    '''
+    animation.run()
+    print("Current MSE:", mse)
+    print("-----")
+    '''
+    
