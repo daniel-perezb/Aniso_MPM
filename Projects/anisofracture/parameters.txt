@@ -1,8 +1,6 @@
-Youngs: 5000000.0
+Youngs: 500000.0
 nu: 0.45
-rho: 291.42104350556565
-residual_stress: 0.0001
-eta: 0.5
-cfl: 0.5
-flip_pic_ratio: 0.0
-percentage: 3170.5575338459676
+rho: 800.0
+eta: 0.22027530549265265
+percentage: 5823.455887898079
+fiber: 300.0
