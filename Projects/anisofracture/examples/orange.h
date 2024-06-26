@@ -11,8 +11,8 @@ std::string helper_output;
 helper_output = "output/RIG_fleece_fibres";
 std::cout << "Attempt 1" << std::endl;
 sim.output_dir.path = helper_output;
-sim.end_frame = 70;
-T frameRate = 10;
+sim.end_frame = 38;
+T frameRate = 2;
 sim.step.frame_dt = (T)1 / frameRate;
 sim.gravity = -9.81 * TV::Unit(1);
 sim.step.max_dt = 1e-3;
@@ -163,7 +163,6 @@ for (size_t file_index = 0; file_index < 255; ++file_index) {
 // ****************************************************************************
 // Ground Plane
 // ****************************************************************************
-
 TV ground_origin = TV(2, 1.817, 2);
 TV ground_normal(0, 1, 0);
 HalfSpace<T, dim> ground_ls(ground_origin, ground_normal);
@@ -172,24 +171,25 @@ AnalyticCollisionObject<T, dim>
 ground_object.setFriction(1);
 init_helper.addAnalyticCollisionObject(ground_object);
 
-double sphere_radius = 0.005;
+double sphere_radius = 0.0078;
 
 // ****************************************************************************
 // Left Hand
 // ****************************************************************************
 
+auto left1Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
+  T t = time;
+  TV translation = TV(0, 0, -.006 * time);
+  TV translation_velocity(0, 0, -.006);
+  object.setTranslation(translation, translation_velocity);
+};
+
 //////////
 // 1
 /////////
 {
-  auto left1Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    T t = time;
-    TV translation = TV(0, 0, -.006 * time);
-    TV translation_velocity(0, 0, -.006);
-    object.setTranslation(translation, translation_velocity);
-  };
-  CappedCylinder<T, dim> cylinder11(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(1.999, 1.83, 1.949));
+  CappedCylinder<T, dim> cylinder11(sphere_radius, 1, Vector<T, 4>(1, 0, 0, 0),
+                                    TV(1.975, 1.825, 1.975)); // 1.907
   HalfSpace<T, dim> board1(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere11;
   cutsphere11.add(cylinder11, board1);
@@ -202,20 +202,14 @@ double sphere_radius = 0.005;
 // 2
 /////////
 {
-  auto left2Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    T t = time;
-    TV translation = TV(0, 0, -.006 * time);
-    TV translation_velocity(0, 0, -.006);
-    object.setTranslation(translation, translation_velocity);
-  };
 
   CappedCylinder<T, dim> cylinder12(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.033, 1.83, 1.949));
+      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.017, 1.825, 1.975));
   HalfSpace<T, dim> board1(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere12;
   cutsphere12.add(cylinder12, board1);
   AnalyticCollisionObject<T, dim> leftObject2(
-      left2Transform, cutsphere12, AnalyticCollisionObject<T, dim>::STICKY);
+      left1Transform, cutsphere12, AnalyticCollisionObject<T, dim>::STICKY);
   init_helper.addAnalyticCollisionObject(leftObject2);
 }
 
@@ -223,38 +217,32 @@ double sphere_radius = 0.005;
 // 3
 /////////
 {
-  auto left3Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    T t = time;
-    TV translation = TV(0, 0, -.006 * time);
-    TV translation_velocity(0, 0, -.006);
-    object.setTranslation(translation, translation_velocity);
-  };
 
   CappedCylinder<T, dim> cylinder13(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.078, 1.83, 1.949));
+      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.065, 1.825, 1.983));
   HalfSpace<T, dim> board1(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere13;
   cutsphere13.add(cylinder13, board1);
   AnalyticCollisionObject<T, dim> leftObject3(
-      left3Transform, cutsphere13, AnalyticCollisionObject<T, dim>::STICKY);
+      left1Transform, cutsphere13, AnalyticCollisionObject<T, dim>::STICKY);
   init_helper.addAnalyticCollisionObject(leftObject3);
 }
 // ****************************************************************************
 // Rigth Hand
 // ****************************************************************************
 
+auto right1Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
+  TV translation = TV(0, 0, .006 * time);
+  TV translation_velocity(0, 0, .006);
+  object.setTranslation(translation, translation_velocity);
+};
 //////////
 // 1
 /////////
 {
-  auto right1Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    TV translation = TV(0, 0, .006 * time);
-    TV translation_velocity(0, 0, .006);
-    object.setTranslation(translation, translation_velocity);
-  };
 
   CappedCylinder<T, dim> cylinder21(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(1.99, 1.83, 1.977));
+      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(1.972, 1.825, 2.01));
   HalfSpace<T, dim> board2(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere21;
   cutsphere21.add(cylinder21, board2);
@@ -266,38 +254,29 @@ double sphere_radius = 0.005;
 // 2
 /////////
 {
-  auto right2Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    TV translation = TV(0, 0, .006 * time);
-    TV translation_velocity(0, 0, .006);
-    object.setTranslation(translation, translation_velocity);
-  };
 
   CappedCylinder<T, dim> cylinder22(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.033, 1.83, 1.977));
+      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.015, 1.825, 2.01));
   HalfSpace<T, dim> board2(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere22;
   cutsphere22.add(cylinder22, board2);
   AnalyticCollisionObject<T, dim> rightObject2(
-      right2Transform, cutsphere22, AnalyticCollisionObject<T, dim>::STICKY);
+      right1Transform, cutsphere22, AnalyticCollisionObject<T, dim>::STICKY);
   init_helper.addAnalyticCollisionObject(rightObject2);
 }
 //////////
 // 3
 /////////
 {
-  auto right3Transform = [](T time, AnalyticCollisionObject<T, dim> &object) {
-    TV translation = TV(0, 0, .006 * time);
-    TV translation_velocity(0, 0, .006);
-    object.setTranslation(translation, translation_velocity);
-  };
 
-  CappedCylinder<T, dim> cylinder23(
-      sphere_radius, 0.5, Vector<T, 4>(1, 0, 0, 0), TV(2.078, 1.83, 1.977));
+  CappedCylinder<T, dim> cylinder23(sphere_radius, 0.5,
+                                    Vector<T, 4>(1, 0, 0, 0),
+                                    TV(2.065, 1.825, 2.015)); // End frame 2.019
   HalfSpace<T, dim> board2(TV(0, 1, 0), TV(0, 1, 0));
   DifferenceLevelSet<T, dim> cutsphere23;
   cutsphere23.add(cylinder23, board2);
   AnalyticCollisionObject<T, dim> rightObject3(
-      right3Transform, cutsphere23, AnalyticCollisionObject<T, dim>::STICKY);
+      right1Transform, cutsphere23, AnalyticCollisionObject<T, dim>::STICKY);
   init_helper.addAnalyticCollisionObject(rightObject3);
 }
 // init_helper.addAllWallsInDomain(4096 * sim.dx, 5 * sim.dx,

@@ -7,6 +7,7 @@ HTML/
 Coverage/
 cmake-build-*
 Build/
+Data/TetMesh/
 Working/
 .sconsign.dblite
 .ycm_extra_conf.pyc

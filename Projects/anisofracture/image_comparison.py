@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-from PIL import ImageGrab
 
 
 def preprocess_image(image_path, scale=1.0, translation=(0, 0)):
@@ -52,10 +51,8 @@ def pad_to_match(img1, img2):
 
     return img1, img2
 def compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords):
-    # Take a screenshot and save
-    screenshot = ImageGrab.grab(bbox=screenshot_coords)
-    screenshot.save('screenshot.png')
-    comparison_image_path = 'screenshot.png'
+    # Load the image
+    comparison_image_path = '/home/daniel/Fleece_animations/Extract_STL/screenshot.png'
 
     # Preprocess images
     binary_target_image = preprocess_image(target_image_path)
@@ -79,12 +76,5 @@ def compute_percentage_difference(target_image_path, scale, translation, rect_co
 
     return percentage_difference
 
-# Test the function
-target_image_path = 'skirted_fleece.png'
-scale = 2.1
-translation = (-160, 90)
-rect_coords = (350, 600, 220, 220)  # (x, y, width, height)
-screenshot_coords = (1470, 450, 1920, 1100)  # (x1, y1, x2, y2)
 
-percentage_diff = compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords)
-print(f"Percentage difference: {percentage_diff:.2f}%")
+

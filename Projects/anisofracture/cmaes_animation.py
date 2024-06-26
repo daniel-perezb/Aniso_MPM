@@ -7,6 +7,7 @@ import pickle
 import time
 import numpy as np
 from cmaes import CMA
+from image_comparison import *
 
 class Animation:
     def __init__(self):
@@ -81,7 +82,6 @@ def compute_mse():
     subprocess.run(["calculate_mse/build/./open"])
     with open('mse.txt', 'r') as file:
         mse = file.read()
-
     mse = float(mse)
     return mse
 
@@ -107,7 +107,7 @@ def objective_function(normalized_params_array, loop):
         params_dict = {"Youngs": params_array[0], "nu": params_array[1], "rho": params_array[2], "eta": params_array[3], "percentage": params_array[4], "fiber": params_array[5]}
         write_parameters(params_dict)
         subprocess.run(["cp", "-R", f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop+1}/RIG_fleece_fibres/data_0.dat", "output/RIG_fleece_fibres/"])
-        subprocess.run(["cp", "-R", f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop+1}/RIG_fleece_fibres/data_70.dat", "output/RIG_fleece_fibres/"])
+        subprocess.run(["cp", "-R", f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop+1}/RIG_fleece_fibres/data_7.dat", "output/RIG_fleece_fibres/"])
         mse = compute_mse()
         print(f"Computed MSE: {mse}")
         time.sleep(3)
@@ -126,6 +126,34 @@ def objective_function(normalized_params_array, loop):
     
     return mse
 
+def compute_pixel_error(loop): 
+  
+    # Read the CSV file
+    with open('solutions_mse.csv', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header row
+        for index, row in enumerate(reader):
+            if index == loop:  # Check if the current row corresponds to the loop index
+                value = row[2].strip()  
+                # Check if the value is not empty
+                if value:  
+                    try:
+                        print(f"Computed Pixel Error: {value}")
+                        return float(value)  # Return the value if it is valid
+                    except ValueError:
+                        # If conversion to float fails, continue to the default calculation
+                        break
+                    
+    time.sleep(60)
+    target_image_path = 'skirted_fleece.png'
+    scale = 2.1
+    translation = (-160, 90)
+    rect_coords = (350, 600, 220, 220)  # (x, y, width, height)
+    screenshot_coords = (1470, 450, 1920, 1100)  # (x1, y1, x2, y2)
+    percentage_diff = compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords)
+    print(f"Computed Pixel Error: {percentage_diff}")
+    return percentage_diff
+
 
 if __name__ == '__main__':
     
@@ -143,19 +171,29 @@ if __name__ == '__main__':
 
     all_solutions = []
     all_mse_values = []
+    all_pixel_error = []
     loop = 0
 
-    for generation in range(5):
+    for generation in range(10):
         solutions = []
 
         for _ in range(optimizer.population_size):
             solution = optimizer.ask()
             mse = objective_function(solution, loop)
-            solutions.append((solution, mse))
+            if mse == float('inf'):
+                pixel_error = float('inf')
+                print(f"Computed Pixel Error: {pixel_error}")
+                error: float('inf')
+            else:
+                pixel_error = compute_pixel_error(loop)
+                error =  (.5 * pixel_error) + (400 * mse)
+
+            solutions.append((solution, error))
             
             # Save the solution and its mse
             all_solutions.append(solution)
             all_mse_values.append(mse)
+            all_pixel_error.append(pixel_error)
             
             loop += 1
             
@@ -165,7 +203,7 @@ if __name__ == '__main__':
                 os.makedirs(folder_name, exist_ok=True)
                 # Copy the contents from the source to the newly created folder 
                 subprocess.run(["cp", "-R", "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/", folder_name])
-
+                subprocess.run(["cp", "-R", "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/partio_7.bgeo", "/home/daniel/Fleece_animations/Extract_STL/final/"])
             # Save the optimizer's state
             with open('/Fibre_directions/Aniso_MPM/Projects/anisofracture/optimizer_state.pkl', 'wb') as f:
                 pickle.dump(optimizer, f)
@@ -173,11 +211,10 @@ if __name__ == '__main__':
             # Save all solutions and their MSE values to a CSV file
             with open('new_solutions_mse.csv', 'w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['Solution', 'MSE'])
-                for solution, mse in zip(all_solutions, all_mse_values):
-                    writer.writerow([solution, mse])
+                writer.writerow(['Solution', 'MSE','Pixel'])
+                for solution, mse, pixel_error in zip(all_solutions, all_mse_values, all_pixel_error):
+                    writer.writerow([solution, mse, pixel_error])
 
-        
         optimizer.tell(solutions)
 
 
