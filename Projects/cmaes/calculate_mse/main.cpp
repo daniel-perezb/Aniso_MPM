@@ -17,7 +17,7 @@ int main() {
       rescaleAndTranslateData(data, scaleFactors);
 
   std::vector<TV> Xp_data;
-  std::string filename = "output/RIG_fleece_fibres/data_0.dat";
+  std::string filename = "../anisofracture/output/RIG_fleece_fibres/data_0.dat";
   readF(filename, Xp_data);
 
   // Find the closest point to each point in rescaledData
@@ -40,6 +40,7 @@ int main() {
     }
   }
 
+  // Value below is obtained using the number of frames desired for the output simulation
   int num_files = 7;
 
   std::vector<TV> new_data;
@@ -48,7 +49,7 @@ int main() {
 
   std::vector<TV> currentXp_data;
   std::string final_filename =
-      "output/RIG_fleece_fibres/data_" + std::to_string(num_files) + ".dat";
+      "../anisofracture/output/RIG_fleece_fibres/data_" + std::to_string(num_files) + ".dat";
   readF(final_filename, currentXp_data);
   // Use the stored indexOfClosestPoint values to extract corresponding values
 

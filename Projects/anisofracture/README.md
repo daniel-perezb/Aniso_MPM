@@ -16,6 +16,7 @@ This code distribution contains one 2D demo (diskTear) and 13 3D demos (listed b
 11. tubePull
 12. orange
 13. fish
+14. fleece
 
 ## Instructions for Use
 
@@ -31,5 +32,8 @@ This code distribution contains one 2D demo (diskTear) and 13 3D demos (listed b
 
 5. To run your selected demos, run "python anisofractureBatch3D.py" (for 3D).
 
+
 **Each demo can also be changed directly in the examples folder, but the Python approach requires minimal
 compile time: simply compile once and all demos should be runnable through the Python script! 
+
+

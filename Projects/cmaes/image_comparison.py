@@ -52,7 +52,7 @@ def pad_to_match(img1, img2):
     return img1, img2
 def compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords):
     # Load the image
-    comparison_image_path = '/home/daniel/Fleece_animations/Extract_STL/screenshot.png'
+    comparison_image_path = 'skirted_fleece.png'
 
     # Preprocess images
     binary_target_image = preprocess_image(target_image_path)

@@ -12,14 +12,14 @@ from image_comparison import *
 class Animation:
     def __init__(self):
         self.cpp_process = None
-        self.output_folder = "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/"
+        self.output_folder = "../anisofracture/output/RIG_fleece_fibres/"
         self.target_file_pattern = "data_{}.dat"  # Specify the target file pattern
         self.target_file_number = 2  # Initialize the target file number
 
     def start_cpp_process(self):
         self.target_file = self.target_file_pattern.format(self.target_file_number)
         self.cpp_process = subprocess.Popen([
-            "/Fibre_directions/Aniso_MPM/Projects/anisofracture/./anisofracture",
+            "../anisofracture/./anisofracture",
             "-test", "8"
         ])
 
@@ -58,7 +58,7 @@ class Animation:
             os.remove(file_path)
   
 
-def read_parameters(filepath="/Fibre_directions/Aniso_MPM/Projects/anisofracture/parameters.txt"):
+def read_parameters(filepath="../anisofracture/parameters.txt"):
     params = {}
     with open(filepath, 'r') as f:
         for line in f:
@@ -67,7 +67,7 @@ def read_parameters(filepath="/Fibre_directions/Aniso_MPM/Projects/anisofracture
     # Return values in the order of initial mean
     return [params["Youngs"], params["nu"], params["rho"], params["eta"], params["percentage"], params["fiber"]]
 
-def write_parameters(params, filepath="/Fibre_directions/Aniso_MPM/Projects/anisofracture/parameters.txt"):
+def write_parameters(params, filepath="../anisofracture/parameters.txt"):
     with open(filepath, 'w') as f:
         for key, value in params.items():
             f.write("{}: {}\n".format(key, value))
@@ -106,8 +106,8 @@ def objective_function(normalized_params_array, loop):
         params_array = denormalize(params_from_csv, lower_bounds, upper_bounds)
         params_dict = {"Youngs": params_array[0], "nu": params_array[1], "rho": params_array[2], "eta": params_array[3], "percentage": params_array[4], "fiber": params_array[5]}
         write_parameters(params_dict)
-        subprocess.run(["cp", "-R", f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop+1}/RIG_fleece_fibres/data_0.dat", "output/RIG_fleece_fibres/"])
-        subprocess.run(["cp", "-R", f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop+1}/RIG_fleece_fibres/data_7.dat", "output/RIG_fleece_fibres/"])
+        subprocess.run(["cp", "-R", f"../../Data/Simulations/folder_{loop+1}/RIG_fleece_fibres/data_0.dat", "../anisofracture/output/RIG_fleece_fibres/"])
+        subprocess.run(["cp", "-R", f"../../Data/Simulations/folder_{loop+1}/RIG_fleece_fibres/data_7.dat", "../anisofracture/output/RIG_fleece_fibres/"])
         mse = compute_mse()
         print(f"Computed MSE: {mse}")
         time.sleep(3)
@@ -197,15 +197,15 @@ if __name__ == '__main__':
             
             loop += 1
             
-            folder_name = f"/home/daniel/Fleece_animations/Extract_STL/folder_{loop}"
+            folder_name = f"../../Data/Simulations/folder_{loop}"
 
             if not os.path.exists(folder_name):
                 os.makedirs(folder_name, exist_ok=True)
                 # Copy the contents from the source to the newly created folder 
-                subprocess.run(["cp", "-R", "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/", folder_name])
-                subprocess.run(["cp", "-R", "/Fibre_directions/Aniso_MPM/Projects/anisofracture/output/RIG_fleece_fibres/partio_7.bgeo", "/home/daniel/Fleece_animations/Extract_STL/final/"])
+                subprocess.run(["cp", "-R", "../anisofracture/output/RIG_fleece_fibres/", folder_name])
+                subprocess.run(["cp", "-R", "../anisofracture/output/RIG_fleece_fibres/partio_7.bgeo", "../../Data/final/"])
             # Save the optimizer's state
-            with open('/Fibre_directions/Aniso_MPM/Projects/anisofracture/optimizer_state.pkl', 'wb') as f:
+            with open('../anisofracture/optimizer_state.pkl', 'wb') as f:
                 pickle.dump(optimizer, f)
 
             # Save all solutions and their MSE values to a CSV file
