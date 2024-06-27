@@ -2,7 +2,7 @@
 
 This is the opensource code for the following papers:
 
-(1) Non-rigid image registration for elastoplastic materials using physics-based simulation, Daniel Perez, Raphael Falque, Alen Alempijevic (IROS 2024)
+(1) Non-rigid image registration for elastoplastic materials using physics-based simulation, Daniel Perez, Raphael Falque, Alen Alempijevic 
 
 (2) AnisoMPM: Animating Anisotropic Damage Mechanics, Joshuah Wolper, Yunuo Chen, Minchen Li, Yu Fang, Ziyin Qu, Jiecong Lu, Meggie Cheng, Chenfanfu Jiang (SIGGRAPH 2020)
 Project Page: https://joshuahwolper.com/anisompm
