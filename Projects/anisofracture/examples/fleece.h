@@ -8,7 +8,7 @@
 #include <vector>
 
 std::string helper_output;
-helper_output = "anisofracture/output/RIG_fleece_fibres";
+helper_output = "output/RIG_fleece_fibres";
 std::cout << "Attempt 1" << std::endl;
 sim.output_dir.path = helper_output;
 sim.end_frame = 38;
@@ -29,8 +29,7 @@ sim.rpic_damping_iteration = 0;
 // ****************************************************************************
 
 std::ifstream file;
-file.open(
-    "../Data/TetMesh/mesh_files/fibre_direction.csv");
+file.open("../../Data/TetMesh/mesh_files/fibre_direction.csv");
 std::vector<std::vector<double>> directions;
 std::string line;
 
@@ -50,11 +49,11 @@ while (std::getline(file, line)) {
 
 file.close();
 
-for (size_t file_index = 0; file_index < 255; ++file_index) {
+for (size_t file_index = 0; file_index < 98; ++file_index) {
 
   // Construct the file path based on the index
   std::string meshFilePath =
-      "../Data/TetMesh/mesh_files/file_" +
+      "/Fibre_directions/Aniso_MPM/Data/TetMesh/mesh_files/file_" +
       std::to_string(file_index + 1) + ".mesh";
 
   FILE *file = std::fopen(meshFilePath.c_str(), "r");
@@ -84,8 +83,7 @@ for (size_t file_index = 0; file_index < 255; ++file_index) {
     std::map<std::string, double> parameters;
 
     // Open the parameters file for reading
-    std::ifstream paramFile(
-        "../Projects/anisofracture/parameters.txt");
+    std::ifstream paramFile("../cmaes/parameters.txt");
 
     if (!paramFile.is_open()) {
       std::cerr << "Error: Could not open parameters file." << std::endl;
@@ -126,6 +124,8 @@ for (size_t file_index = 0; file_index < 255; ++file_index) {
     T particle_count = particles_handle.particle_range.length();
     T per_particle_volume = total_volume / particle_count;
     sim.dx = std::pow(particle_per_cell * per_particle_volume, (T)1 / (T)3);
+
+    /*
     if (1) {
       StdVector<TV> samples;
       StdVector<Vector<int, 4>> indices;
@@ -136,6 +136,7 @@ for (size_t file_index = 0; file_index < 255; ++file_index) {
                              sim.output_dir.path + "/tet2.vtk";
       writeTetmeshVtk(vtk_path, samples, indices);
     }
+    */
 
     QRAnisotropic<T, dim> model(Youngs, nu, helper_anisotropic);
     StdVector<TV> a_0;

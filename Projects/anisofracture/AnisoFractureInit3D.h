@@ -72,6 +72,8 @@ public:
 #include "examples/vonMisesTear.h"
     } else if (test_number == 25) {
 #include "examples/boneTwist.h"
+    } else if (test_number == 27) {
+#include "examples/fleece.h"
     }
   }
 };

@@ -9,6 +9,9 @@ import numpy as np
 from cmaes import CMA
 from image_comparison import *
 
+# Use pixel similarity for cmaes
+image_error = False
+
 class Animation:
     def __init__(self):
         self.cpp_process = None
@@ -20,7 +23,7 @@ class Animation:
         self.target_file = self.target_file_pattern.format(self.target_file_number)
         self.cpp_process = subprocess.Popen([
             "../anisofracture/./anisofracture",
-            "-test", "8"
+            "-test", "27"
         ])
 
     def stop_cpp_process(self):
@@ -58,16 +61,18 @@ class Animation:
             os.remove(file_path)
   
 
-def read_parameters(filepath="../anisofracture/parameters.txt"):
+def read_parameters(filepath="parameters.txt"):
     params = {}
     with open(filepath, 'r') as f:
         for line in f:
-            key, value = line.split(":")
-            params[key.strip()] = float(value.strip())
+            if ':' in line: 
+                print(line)
+                key, value = line.split(":")
+                params[key.strip()] = float(value.strip())
     # Return values in the order of initial mean
     return [params["Youngs"], params["nu"], params["rho"], params["eta"], params["percentage"], params["fiber"]]
 
-def write_parameters(params, filepath="../anisofracture/parameters.txt"):
+def write_parameters(params, filepath="parameters.txt"):
     with open(filepath, 'w') as f:
         for key, value in params.items():
             f.write("{}: {}\n".format(key, value))
@@ -85,66 +90,28 @@ def compute_mse():
     mse = float(mse)
     return mse
 
-def read_parameters_from_csv(loop):
-    with open('solutions_mse.csv', 'r') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip header row
-        for index, row in enumerate(reader):
-            if index == loop:
-                # Splitting the string by spaces instead of commas
-                solution_str = row[0].strip('[]').split()
-                solution = np.array([float(x.strip()) for x in solution_str])
-                return solution
-    return None
-
-
 def objective_function(normalized_params_array, loop):
-    params_from_csv = read_parameters_from_csv(loop)
 
-    if params_from_csv is not None:
-        # Convert the parameters back to their original scale
-        params_array = denormalize(params_from_csv, lower_bounds, upper_bounds)
-        params_dict = {"Youngs": params_array[0], "nu": params_array[1], "rho": params_array[2], "eta": params_array[3], "percentage": params_array[4], "fiber": params_array[5]}
-        write_parameters(params_dict)
-        subprocess.run(["cp", "-R", f"../../Data/Simulations/folder_{loop+1}/RIG_fleece_fibres/data_0.dat", "../anisofracture/output/RIG_fleece_fibres/"])
-        subprocess.run(["cp", "-R", f"../../Data/Simulations/folder_{loop+1}/RIG_fleece_fibres/data_7.dat", "../anisofracture/output/RIG_fleece_fibres/"])
-        mse = compute_mse()
-        print(f"Computed MSE: {mse}")
-        time.sleep(3)
+    # Convert the parameters back to their original scale
+    params_array = denormalize(normalized_params_array, lower_bounds, upper_bounds)
+    params_dict = {"Youngs": params_array[0], "nu": params_array[1], "rho": params_array[2], "eta": params_array[3], "percentage": params_array[4], "fiber": params_array[5]}
+    write_parameters(params_dict)
     
-    else:
-        # If not, proceed with running the animation and computing MSE
-        params_array = denormalize(normalized_params_array, lower_bounds, upper_bounds)
-        params_dict = {"Youngs": params_array[0], "nu": params_array[1], "rho": params_array[2], "eta": params_array[3], "percentage": params_array[4], "fiber": params_array[5]}
-        write_parameters(params_dict)
-        success = animation.run()
+    success = animation.run()
 
-        if not success:
-            return float('inf')  
+    mse = compute_mse()
+    print(f"Computed MSE: {mse}")
+    time.sleep(3)
+        
+    if not success:
+        return float('inf')  
 
-        mse = compute_mse()
+    mse = compute_mse()
     
     return mse
 
 def compute_pixel_error(loop): 
-  
-    # Read the CSV file
-    with open('solutions_mse.csv', 'r') as file:
-        reader = csv.reader(file)
-        next(reader)  # Skip the header row
-        for index, row in enumerate(reader):
-            if index == loop:  # Check if the current row corresponds to the loop index
-                value = row[2].strip()  
-                # Check if the value is not empty
-                if value:  
-                    try:
-                        print(f"Computed Pixel Error: {value}")
-                        return float(value)  # Return the value if it is valid
-                    except ValueError:
-                        # If conversion to float fails, continue to the default calculation
-                        break
-                    
-    time.sleep(60)
+   
     target_image_path = 'skirted_fleece.png'
     scale = 2.1
     translation = (-160, 90)
@@ -165,8 +132,15 @@ if __name__ == '__main__':
     
     normalized_initial_mean = normalize(initial_mean, lower_bounds, upper_bounds)
     bounds_array = np.vstack([np.zeros_like(lower_bounds), np.ones_like(upper_bounds)]).T
-    optimizer = CMA(mean=normalized_initial_mean, sigma=1.3, bounds=bounds_array)
     
+    if os.path.exists('optimizer_state.pkl'):
+        with open('optimizer_state.pkl', 'rb') as f:
+            optimizer = pickle.load(f)
+        print("Loaded existing optimizer state")
+    else:
+        optimizer = CMA(mean=normalized_initial_mean, sigma=1.3, bounds=bounds_array)
+        print("Created a new optimizer")
+
     print("Created a new optimizer")
 
     all_solutions = []
@@ -185,8 +159,11 @@ if __name__ == '__main__':
                 print(f"Computed Pixel Error: {pixel_error}")
                 error: float('inf')
             else:
-                pixel_error = compute_pixel_error(loop)
-                error =  (.5 * pixel_error) + (400 * mse)
+                if image_error:
+                    pixel_error = compute_pixel_error(loop)
+                    error =  (.5 * pixel_error) + (400 * mse)
+                else:
+                    error = 800 * mse
 
             solutions.append((solution, error))
             
@@ -202,14 +179,15 @@ if __name__ == '__main__':
             if not os.path.exists(folder_name):
                 os.makedirs(folder_name, exist_ok=True)
                 # Copy the contents from the source to the newly created folder 
-                subprocess.run(["cp", "-R", "../anisofracture/output/RIG_fleece_fibres/", folder_name])
-                subprocess.run(["cp", "-R", "../anisofracture/output/RIG_fleece_fibres/partio_7.bgeo", "../../Data/final/"])
+                # subprocess.run(["cp", "-R", "output/RIG_fleece_fibres/", folder_name])
+                # subprocess.run(["cp", "-R", "output/RIG_fleece_fibres/partio_7.bgeo", "../../Data/final/"])
+        
             # Save the optimizer's state
-            with open('../anisofracture/optimizer_state.pkl', 'wb') as f:
+            with open('optimizer_state.pkl', 'wb') as f:
                 pickle.dump(optimizer, f)
 
             # Save all solutions and their MSE values to a CSV file
-            with open('new_solutions_mse.csv', 'w', newline='') as file:
+            with open('solutions_mse.csv', 'w', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(['Solution', 'MSE','Pixel'])
                 for solution, mse, pixel_error in zip(all_solutions, all_mse_values, all_pixel_error):
