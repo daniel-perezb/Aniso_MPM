@@ -1,6 +1,6 @@
 ## Code description 
 
-This is the opensource code for the following papers:
+This is the opensource code for the following works:
 
 (1) Non-rigid image registration for elastoplastic materials using physics-based simulation, Daniel Perez, Raphael Falque, Alen Alempijevic 
 
@@ -26,6 +26,21 @@ When executing cmake, users should manually choose the compiler to use as well.
 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=/usr/bin/gcc-7 -DCMAKE_CXX_COMPILER=/usr/bin/g++-7
 ```
 
+## Dependencies Installation
+
+    sudo apt-get install make cmake g++ libeigen3-dev gfortran libmetis-dev
+    sudo apt-get install libopenvdb-dev libboost-all-dev libilmbase-dev libopenexr-dev
+    sudo apt-get install libtbb2 libtbb-dev libz-dev clang-format-6.0 clang-format
+   
+## Building
+
+    mkdir build && cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j 4
+
+## CMA-ES
+Further instructions for cma-es are located in 'Projects/cmaes'
+
 ## Unzip Data
 
 Download and unzip the following file in the root directory.
@@ -33,18 +48,6 @@ Download and unzip the following file in the root directory.
 https://drive.google.com/file/d/1f22ObJmiq8H1_YObTz5BuE4IAWLQhyuB/view?usp=sharing
 
 You need to do this due to the github single file size limit.
-
-## Dependencies Installation
-
-    sudo apt-get install make cmake g++ libeigen3-dev gfortran libmetis-dev
-    sudo apt-get install libopenvdb-dev libboost-all-dev libilmbase-dev libopenexr-dev
-    sudo apt-get install libtbb2 libtbb-dev libz-dev clang-format-6.0 clang-format
-   
-## Building in Ziran
-
-    mkdir build && cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
-    make -j 4
 
 ## Running Demos
 
