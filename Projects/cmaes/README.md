@@ -1,5 +1,7 @@
 ## TODO
-- [ ] Run training to check if code is working correctly
+- [ ] Check if code cimpiles in a different computer
+- [ ] Upload parameters used for paper
+
 
 ## Code description 
 
@@ -19,10 +21,16 @@ https://drive.google.com/file/d/1U5400w3e5UFbbBOVgrsYPe5iXhBnDi4C/view?usp=drive
 The data must be unzip in the following directory: 
 /Fibre_Directions/Aniso_MPM/Data/TetMesh/
 
+## Path change
+Ensure that line 56 is set correctly in file '../Projects/anisofracture/examples/fleece.h
+- [ ] Run training to check if code is working correctly
+
 ## Single Run
 To run the code only once:
+    
     cd ../anisofracture
     ./anisofracture -test 27
+   
 
 Material properties of the fleece are located in 'parameters.txt' 
 
