@@ -1,7 +1,5 @@
 ## TODO
-- [ ] Check if code cimpiles in a different computer
-- [ ] Upload parameters used for paper
-
+- [ ] Check if code compiles in a different computer
 
 ## Code description 
 
@@ -16,7 +14,7 @@ Project Page: https://joshuahwolper.com/anisompm
 
 ## Data
 Data for the animation can be downloaded in the following link: 
-https://drive.google.com/file/d/1U5400w3e5UFbbBOVgrsYPe5iXhBnDi4C/view?usp=drive_link
+https://drive.google.com/file/d/1Cfn29vXSrPEiAoZ3FlQq0cbJG4EshmSd/view?usp=drive_link
 
 The data must be unzip in the following directory: 
 /Fibre_Directions/Aniso_MPM/Data/TetMesh/
@@ -59,7 +57,7 @@ To run the training of the parameters run from the 'cmaes' folder
     python3 cmaes_animation.py 
 
 ## Image Comparison
-To perform pixel si ilarity between the output and the target Houdini software must be installed. 
+To perform pixel similarity between the output and the target Houdini software must be installed. 
 Hyperparameters in lines 116-119 in 'cmaes-animation' must be manually adjusted.
 
 If wanting to run the animation without the pixel similarity keep variable equal to false in line 13 of 'cmaes_animation', otherwise:
