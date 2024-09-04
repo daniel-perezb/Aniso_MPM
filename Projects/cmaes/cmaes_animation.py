@@ -15,7 +15,7 @@ image_error = False
 class Animation:
     def __init__(self):
         self.cpp_process = None
-        self.output_folder = "../anisofracture/output/RIG_fleece_fibres/"
+        self.output_folder = "output/RIG_fleece_fibres/"
         self.target_file_pattern = "data_{}.dat"  # Specify the target file pattern
         self.target_file_number = 2  # Initialize the target file number
 
@@ -98,10 +98,6 @@ def objective_function(normalized_params_array, loop):
     write_parameters(params_dict)
     
     success = animation.run()
-
-    mse = compute_mse()
-    print(f"Computed MSE: {mse}")
-    time.sleep(3)
         
     if not success:
         return float('inf')  
@@ -157,13 +153,14 @@ if __name__ == '__main__':
             if mse == float('inf'):
                 pixel_error = float('inf')
                 print(f"Computed Pixel Error: {pixel_error}")
-                error: float('inf')
+                error = float('inf')
             else:
                 if image_error:
                     pixel_error = compute_pixel_error(loop)
                     error =  (.5 * pixel_error) + (400 * mse)
                 else:
                     error = 800 * mse
+                    pixel_error = float('nan')
 
             solutions.append((solution, error))
             
@@ -179,7 +176,7 @@ if __name__ == '__main__':
             if not os.path.exists(folder_name):
                 os.makedirs(folder_name, exist_ok=True)
                 # Copy the contents from the source to the newly created folder 
-                # subprocess.run(["cp", "-R", "output/RIG_fleece_fibres/", folder_name])
+                subprocess.run(["cp", "-R", "output/RIG_fleece_fibres/", folder_name])
                 # subprocess.run(["cp", "-R", "output/RIG_fleece_fibres/partio_7.bgeo", "../../Data/final/"])
         
             # Save the optimizer's state

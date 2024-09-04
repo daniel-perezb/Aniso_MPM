@@ -6,8 +6,23 @@
 #include <stdexcept>
 #include <utility>
 
+// Function to find the last file number instead of hyperparameter
+int findLastFileNumber() {
+  int lastFileNumber = 0;
+  for (int i = 0; i < 1000; i++) {
+    std::string filename = "output/RIG_fleece_fibres/data_" + std::to_string(i) + ".dat";
+    std::ifstream file(filename);
+    if (!file) {
+      lastFileNumber = i - 1;
+      break;
+    }
+  }
+  return lastFileNumber;
+}
+
 int main() {
   // Using the scale module
+  // Points below are obtained using TAPIR
   std::string dataFilePath =
       "../../Data/TetMesh/mesh_files/initial_final_points.txt";
   std::string scaleFilePath = "../../Data/TetMesh/mesh_files/scale_values.txt";
@@ -17,7 +32,7 @@ int main() {
       rescaleAndTranslateData(data, scaleFactors);
 
   std::vector<TV> Xp_data;
-  std::string filename = "../anisofracture/output/RIG_fleece_fibres/data_0.dat";
+  std::string filename = "output/RIG_fleece_fibres/data_0.dat";
   readF(filename, Xp_data);
 
   // Find the closest point to each point in rescaledData
@@ -39,9 +54,9 @@ int main() {
       all_data.push_back(closestPoint);
     }
   }
-
+  
   // Value below is obtained using the number of frames desired for the output simulation
-  int num_files = 7;
+  int num_files = findLastFileNumber();
 
   std::vector<TV> new_data;
   std::vector<TV> final_values;
@@ -49,7 +64,7 @@ int main() {
 
   std::vector<TV> currentXp_data;
   std::string final_filename =
-      "../anisofracture/output/RIG_fleece_fibres/data_" + std::to_string(num_files) + ".dat";
+      "output/RIG_fleece_fibres/data_" + std::to_string(num_files) + ".dat";
   readF(final_filename, currentXp_data);
   // Use the stored indexOfClosestPoint values to extract corresponding values
 
