@@ -100,14 +100,22 @@ void Check_Compliance()
 //#####################################################################
 // Function Raw_Allocate
 //#####################################################################
-void* Raw_Allocate(const size_t size)
-{
+const size_t MAX_MEMORY = 32L * 1024 * 1024 * 1024;  // 32 GB
+
+void* Raw_Allocate(size_t size) {
+    if (size > MAX_MEMORY) {
+        std::cerr << "Requested allocation (" << size << " bytes) exceeds the maximum allowed memory ("
+                  << MAX_MEMORY << " bytes)." << std::endl;
+        std::cerr << "Adjusting allocation size to the maximum allowed memory (" << MAX_MEMORY << " bytes)." << std::endl;
+        size = MAX_MEMORY;  // Adjust the size to the maximum memory (32GB)
+    }
+
     void* ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE, -1, 0);
     if (ptr == MAP_FAILED) FATAL_ERROR("Failed to allocate " + Value_To_String(size) + " bytes");
     if (0xfffUL & (uint64_t)ptr) FATAL_ERROR("Allocated pointer value " + Value_To_String(ptr) + " is not page-aligned");
+
     return ptr;
 }
-
 //#####################################################################
 // Function Raw_Deallocate
 //#####################################################################
