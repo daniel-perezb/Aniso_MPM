@@ -38,7 +38,7 @@ T nu = 0.45;
 T rho = 500;
 
 // sample particles from a .mesh file
-std::string filename = "TetMesh/fleece500k.mesh";
+std::string filename = "TetMesh/meat_500k.mesh";
 MpmParticleHandleBase<T, dim> particles_handle =
     init_helper.sampleFromTetWildFile(filename, rho);
 T total_volume = particles_handle.total_volume;

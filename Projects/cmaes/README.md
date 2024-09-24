@@ -1,11 +1,15 @@
 ## TODO
-- [ ] Check if code compiles in a different computer
+- [ ] Add code for obtaining fibre directons using structure tensors
+- [ ] Add code to obtain ply file for simulation using first frame of video and mask
+- [ ] How is the output from TAPIR going to be rescaled now
+- [ ] Address all the problems in image comparison
+
 
 ## Code description 
 
 This is the opensource code for the following works:
 
-(1) Non-rigid image registration for elastoplastic materials using physics-based simulation, Daniel Perez, Raphael Falque, Alen Alempijevic 
+(1) 
 
 The paper above utilises the material simulation implemented below for obtaining material's properties of fleece:
 
@@ -39,7 +43,7 @@ Material properties of the fleece are located in 'parameters.txt'
     sudo apt-get update
 
     # Install Python and development tools
-    sudo apt-get install -y python3-pip python3-dev build-essential libopencv-dev
+    sudo apt-get install -y python3-pip python3-dev build-essential libopencv-dev 
 
     # Install Python packages   
     pip install numpy cmaes opencv-python
@@ -57,13 +61,13 @@ To run the training of the parameters run from the 'cmaes' folder
     python3 cmaes_animation.py 
 
 ## Image Comparison
-To perform pixel similarity between the output and the target Houdini software must be installed. 
-Hyperparameters in lines 116-119 in 'cmaes-animation' must be manually adjusted.
-
-If wanting to run the animation without the pixel similarity keep variable equal to false in line 13 of 'cmaes_animation', otherwise:
-- [ ] Explain how to adjust them 
+Image comparison is done by creating an image and rescaling from the output files named 'data_*.dat'
+TODO: 
+- [ ] Change cmaes_animation.py to perform image comparison automaticaly. 
+- [ ] Scale values needed for MSE must be obtained automatically
 
 ## Visualization
-All files are output as Houdini's VDB '.bgeo' files. 
+An image of the last pointcloud is displayed using main_image.cpp in calculater_mse. This image is then stored as 'binary_image.png'. 
+THe rest of the files are '.bgeo' files compatible with Houdini's VDB software. 
 
 
