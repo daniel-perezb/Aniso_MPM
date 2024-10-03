@@ -1,5 +1,5 @@
 
-// ./anisofracture -test 8
+// ./anisofracture -test 27
 
 #include <cstdio>
 #include <fstream>
@@ -61,13 +61,13 @@ sim.cfl = 0.4;
 T helper_alpha = 0;
 T residual_stress = 0.01;
 
-TV helper_fiber = TV(1, 1, 1); // will overwrite with radial fiber
+TV helper_fiber = TV(1, 1, 1);
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// File and Fibre Direction ////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Construct the file path based on the index
-std::string meshFilePath = "TetMesh/split/sample1_top.mesh";
+std::string meshFilePath = "TetMesh/fleece_files/fleece_mesh.mesh";
 
 MpmParticleHandleBase<T, dim> particles_handle =
     init_helper.sampleFromTetWildFile(meshFilePath, rho);
@@ -87,6 +87,7 @@ if (1) {
   writeTetmeshVtk(vtk_path, samples, indices);
 }
 
+/*
 StdVector<TV> node_wise_fiber;
 if (1) {
   StdVector<TV> samples;
@@ -102,6 +103,7 @@ if (1) {
   StdVector<TV> tet_wise_fiber;
   fiberGen(samples, indices, inflow, outflow, tet_wise_fiber, node_wise_fiber);
 }
+*/
 
 QRAnisotropic<T, dim> model(Youngs, nu);
 StdVector<TV> a_0;
@@ -116,15 +118,13 @@ T l0 = 0.5 * sim.dx;
 T zeta = 1;
 bool allow_damage = true;
 model.scaleFiberStiffness(0, fiberstifness);
-particles_handle.transform([&](int index, Ref<T> mass, TV &X, TV &V) {
-  X += TV(2, 2, 2);
-});
 particles_handle.addFBasedMpmForceWithAnisotropicPhaseField(a_0, alphas,
                                                             percentage, l0,
                                                             model, eta, zeta,
                                                             allow_damage,
                                                             residual_stress);
 
+/*
 int i = 0;
 for (auto iter = particles_handle.particles.subsetIter(
          DisjointRanges{particles_handle.particle_range}, F_name<T, dim>());
@@ -135,6 +135,7 @@ for (auto iter = particles_handle.particles.subsetIter(
   a0.emplace_back(fiber);
   F = particles_handle.initializeRotatedFHelper(a0);
 }
+*/
 
 // ****************************************************************************
 // Ground Plane
