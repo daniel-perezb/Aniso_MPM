@@ -9,9 +9,6 @@ import numpy as np
 from cmaes import CMA
 from image_comparison import *
 
-# Use pixel similarity for cmaes
-image_error = False
-
 class Animation:
     def __init__(self):
         self.cpp_process = None
@@ -84,7 +81,7 @@ def denormalize(normalized_params, lower_bounds, upper_bounds):
     return normalized_params * (upper_bounds - lower_bounds) + lower_bounds
 
 def compute_mse():
-    subprocess.run(["calculate_mse/build/./open"])
+    subprocess.run(["calculate_mse/build/./mse"])
     with open('mse.txt', 'r') as file:
         mse = file.read()
     mse = float(mse)
@@ -107,13 +104,19 @@ def objective_function(normalized_params_array, loop):
     return mse
 
 def compute_pixel_error(loop): 
-   
-    target_image_path = 'skirted_fleece.png'
-    scale = 2.1
-    translation = (-160, 90)
-    rect_coords = (350, 600, 220, 220)  # (x, y, width, height)
-    screenshot_coords = (1470, 450, 1920, 1100)  # (x1, y1, x2, y2)
-    percentage_diff = compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords)
+
+    # Create images of before and after animation
+    subprocess.run(["calculate_mse/build/./create_image"])
+    
+    # Load the images
+    image1 = "../../Data/TetMesh/mesh_files/fleece_files/output_binary_image1.png"
+    image2 = "../../Data/TetMesh/mesh_files/fleece_files/output_binary_image2.png"
+    mask1 = "../../Data/TetMesh/mesh_files/fleece_files/initial_mask.png"
+    mask2 = "../../Data/TetMesh/mesh_files/fleece_files/final_mask.png"
+    
+    # Compute percentage difference (using image comparison.py)
+    percentage_diff = process_images(image1, image2, mask1, mask2)
+    
     print(f"Computed Pixel Error: {percentage_diff}")
     return percentage_diff
 
@@ -155,13 +158,9 @@ if __name__ == '__main__':
                 print(f"Computed Pixel Error: {pixel_error}")
                 error = float('inf')
             else:
-                if image_error:
-                    pixel_error = compute_pixel_error(loop)
-                    error =  (.5 * pixel_error) + (400 * mse)
-                else:
-                    error = 800 * mse
-                    pixel_error = float('nan')
-
+                pixel_error = compute_pixel_error(loop)
+                error =  (.5 * pixel_error) + (400 * mse)
+            
             solutions.append((solution, error))
             
             # Save the solution and its mse

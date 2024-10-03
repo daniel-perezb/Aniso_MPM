@@ -1,80 +1,68 @@
 import cv2
 import numpy as np
 
+def load_image(image_path):
+    """Load an image in grayscale."""
+    return cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-def preprocess_image(image_path, scale=1.0, translation=(0, 0)):
-    # Load the image
-    image = cv2.imread(image_path, cv2.IMREAD_UNCHANGED)
-    if image is None:
-        raise ValueError(f"Image not found at path: {image_path}")
+def compute_rescaling_values(image1, mask1):
+    """Compute the scaling and alignment values between image1 and mask1."""
+    # Find contours in both images
+    contours1, _ = cv2.findContours(image1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours2, _ = cv2.findContours(mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    # Compute bounding boxes for both contours
+    x1, y1, w1, h1 = cv2.boundingRect(contours1[0])
+    x2, y2, w2, h2 = cv2.boundingRect(contours2[0])
+    
+    # Compute scaling factors
+    scale_x = w2 / w1
+    scale_y = h2 / h1
+    
+    return scale_x, scale_y, x1, y1, x2, y2
 
-    # Apply scaling and translation
-    if scale != 1.0:
-        width = int(image.shape[1] * scale)
-        height = int(image.shape[0] * scale)
-        image = cv2.resize(image, (width, height), interpolation=cv2.INTER_AREA)
-    if any(translation):
-        M = np.float32([[1, 0, translation[0]], [0, 1, translation[1]]])
-        image = cv2.warpAffine(image, M, (image.shape[1], image.shape[0]))
+def rescale_image(image, scale_x, scale_y, shift_x, shift_y):
+    """Rescales image using the provided scale factors and applies the translation."""
+    height, width = image.shape[:2]
+    
+    # Apply scaling
+    scaled_image = cv2.resize(image, (int(width * scale_x), int(height * scale_y)))
+    
+    # Apply translation
+    translation_matrix = np.float32([[1, 0, shift_x], [0, 1, shift_y]])
+    translated_image = cv2.warpAffine(scaled_image, translation_matrix, (width, height))
+    
+    return translated_image
 
-    # Convert to grayscale and apply threshold
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    _, binary_image = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    return binary_image
-
-
-def pad_to_match(img1, img2):
-    # Pad the smaller image to match the size of the larger one
-    h1, w1 = img1.shape[:2]
-    h2, w2 = img2.shape[:2]
-
-    # Determine padding amounts
-    vertical_padding = abs(h1 - h2)
-    horizontal_padding = abs(w1 - w2)
-
-    # Pad the smaller image
-    if h1 > h2:
-        img2 = cv2.copyMakeBorder(img2, vertical_padding // 2, vertical_padding - vertical_padding // 2,
-                                  0, 0, cv2.BORDER_CONSTANT, value=[0, 0, 0])
-    elif h2 > h1:
-        img1 = cv2.copyMakeBorder(img1, vertical_padding // 2, vertical_padding - vertical_padding // 2,
-                                  0, 0, cv2.BORDER_CONSTANT, value=[0, 0, 0])
-
-    if w1 > w2:
-        img2 = cv2.copyMakeBorder(img2, 0, 0,
-                                  horizontal_padding // 2, horizontal_padding - horizontal_padding // 2,
-                                  cv2.BORDER_CONSTANT, value=[0, 0, 0])
-    elif w2 > w1:
-        img1 = cv2.copyMakeBorder(img1, 0, 0,
-                                  horizontal_padding // 2, horizontal_padding - horizontal_padding // 2,
-                                  cv2.BORDER_CONSTANT, value=[0, 0, 0])
-
-    return img1, img2
-def compute_percentage_difference(target_image_path, scale, translation, rect_coords, screenshot_coords):
-    # Load the image
-    comparison_image_path = 'skirted_fleece.png'
-
-    # Preprocess images
-    binary_target_image = preprocess_image(target_image_path)
-    binary_comparison_image = preprocess_image(comparison_image_path, scale=scale, translation=translation)
-
-    # Pad images to match sizes
-    binary_target_image, binary_comparison_image = pad_to_match(binary_target_image, binary_comparison_image)
-
-    # Extract the ROI based on rect_coords
-    x, y, w, h = rect_coords
-    roi_target = binary_target_image[y:y + h, x:x + w]
-    roi_comparison = binary_comparison_image[y:y + h, x:x + w]
-
-    # Compute the pixel difference within the rectangle
-    difference = cv2.absdiff(roi_target, roi_comparison)
+def compute_percentage_difference(image1, image2):
+    """Computes the percentage difference between two binary images."""
+    # Compute absolute difference between the two images
+    difference = cv2.absdiff(image1, image2)
+    
+    # Calculate the number of different pixels
     num_different_pixels = np.sum(difference != 0)
-
+    
     # Calculate the percentage difference
     total_pixels = np.prod(difference.shape)
     percentage_difference = (num_different_pixels / total_pixels) * 100
-
+    
     return percentage_difference
 
+def process_images(image1, image2, mask1, mask2):
 
-
+    # Load the images
+    image1 = load_image(image1)
+    image2 = load_image(image2)
+    mask1 = load_image(mask1)
+    mask2 = load_image(mask2)
+    
+    #Compute the rescaling values between image1 and mask1
+    scale_x, scale_y, x1, y1, x2, y2 = compute_rescaling_values(image1, mask1)
+    
+    #Apply these values to image2
+    rescaled_image2 = rescale_image(image2, scale_x, scale_y, x2 - x1, y2 - y1)
+    
+    #Compute the percentage difference between the rescaled image2 and mask2
+    percentage_difference = compute_percentage_difference(rescaled_image2, mask2)
+    
+    return percentage_difference
