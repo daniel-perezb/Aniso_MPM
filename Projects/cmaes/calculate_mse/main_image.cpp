@@ -5,15 +5,14 @@
 #include <vector>
 
 // Parameters for the image
-const int image_size = 1200; // Image will be 1200x1200 pixels
-const int point_radius = 1;  // Radius of the points in the image
+const int image_size =
+    1200; // Image will be 1200x1200 pixels
+          // Rescaling to original image will be applied later
 
-// Enum for selecting the viewpoint
-enum Viewpoint {
-  XY_VIEW, // Top-down view (Z-axis projection)
-  XZ_VIEW, // View from Y-axis
-  YZ_VIEW  // View from X-axis
-};
+const int point_radius =
+    5; // Radius of the points in the image
+       // A value of 5 to have a the gaps filled in
+       // Value can be reduced if more than 50k points are used for mesh
 
 void createBinaryImage(const std::vector<TV> &Xp_data, Viewpoint viewpoint,
                        const std::string &image_name) {
@@ -97,34 +96,22 @@ void createBinaryImage(const std::vector<TV> &Xp_data, Viewpoint viewpoint,
 
 int main() {
 
+  // Create binary imagw from the first frame of animation
   std::vector<TV> Xp_data1;
   readF("output/RIG_fleece_fibres/data_0.dat", Xp_data1);
+  createBinaryImage(Xp_data1, XZ_VIEW,
+                    "../../Data/TetMesh/fleece_files/output_binary_image1.png");
 
-  // Choose the viewpoint: XY_VIEW (top-down), XZ_VIEW (from side Y), YZ_VIEW
-  // (from side X)
-  createBinaryImage(
-      Xp_data1, XZ_VIEW,
-      "../../Data/TetMesh/fleece_files/output_binary_image1.png"); // Change
-                                                                   // XY_VIEW to
-                                                                   // XZ_VIEW or
-                                                                   // YZ_VIEW
-                                                                   // for
-                                                                   // different
-                                                                   // viewpoints
-
+  // Find last file in output
+  int num_files = findLastFileNumber();
+  std::string filename = "output/RIG_fleece_fibres/data_" + std::to_string(num_files) + ".dat";
+  
+  // Create binary imagw from the last frame of animation
   std::vector<TV> Xp_data2;
-  readF("output/RIG_fleece_fibres/data_4.dat", Xp_data2);
-  // Choose the viewpoint: XY_VIEW (top-down), XZ_VIEW (from side Y), YZ_VIEW
-  // (from side X)
-  createBinaryImage(
-      Xp_data2, XZ_VIEW,
-      "../../Data/TetMesh/fleece_files/output_binary_image2.png"); // Change
-                                                                   // XY_VIEW to
-                                                                   // XZ_VIEW or
-                                                                   // YZ_VIEW
-                                                                   // for
-                                                                   // different
-                                                                   // viewpoints
+  readF(filename, Xp_data2);
+  createBinaryImage(Xp_data2, XZ_VIEW,
+                    "../../Data/TetMesh/fleece_files/output_binary_image2.png");
 
+  std::cout << "Images created succesfully" << std::endl;
   return 0;
 }

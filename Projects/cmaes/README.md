@@ -1,10 +1,3 @@
-## TODO
-- [ ] Add code for obtaining fibre directons using structure tensors
-- [ ] Add code to obtain ply file for simulation using first frame of video and mask
-- [ ] How is the output from TAPIR going to be rescaled now
-- [ ] Address all the problems in image comparison
-
-
 ## Code description 
 
 This is the opensource code for the following works:
@@ -56,18 +49,28 @@ Material properties of the fleece are located in 'parameters.txt'
     cmake .. && make -j 4
 
 ## Running training of cmaes
-To run the training of the parameters run from the 'cmaes' folder
+To run the training of the parameters run from the 'cmaes' folder.
 
     python3 cmaes_animation.py 
 
+
+## Creating mesh from image
+To create a mesh from an image the file 'mesh_creation.py' is used. This files takes in a binary image of the object and the camera extrinsics to create a mesh with real-life dimensions. THe output file is then transformed into a '*.mesh' file by using TetWild library
+
+https://github.com/Yixin-Hu/TetWild
+
+
+## Fibre Direction
+Fibre direction for fleece images is perfomed using structure tensors. Direction of the fibres can be obtained using 'direction_fibres.py'
+
 ## Image Comparison
-Image comparison is done by creating an image and rescaling from the output files named 'data_*.dat'
-TODO: 
-- [ ] Change cmaes_animation.py to perform image comparison automaticaly. 
-- [ ] Scale values needed for MSE must be obtained automatically
+Image comparison is done by creating an image and rescaling from the output files named 'data_*.dat. A new image is created from running:
+    ./calculate_mse/build/create_image 
+
+The images are then stored as output_binary_image1.png and output_binary_image1.png in folder '../../Data/TetMesh/fleece_files/'
 
 ## Visualization
-An image of the last pointcloud is displayed using main_image.cpp in calculater_mse. This image is then stored as 'binary_image.png'. 
-THe rest of the files are '.bgeo' files compatible with Houdini's VDB software. 
+An image of the last pointcloud is displayed using main_image.cpp in calculate_mse. This image is then stored as previously discussed. 
+The rest of the files are '.bgeo' files compatible with Houdini's VDB software. 
 
 

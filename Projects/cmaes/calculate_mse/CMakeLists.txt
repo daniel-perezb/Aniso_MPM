@@ -13,9 +13,9 @@ find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
 # MSE executable
-add_executable(mse main.cpp readf_module.cpp scale_module.cpp computeMSE.cpp findClosestPoint.cpp)
+add_executable(mse main.cpp readf_module.cpp scale_module.cpp computeMSE.cpp findClosestPoint.cpp last_file.cpp)
 target_link_libraries(mse ${OpenCV_LIBS})
 
 # Create_image executable
-add_executable(create_image main_image.cpp readf_module.cpp)
+add_executable(create_image main_image.cpp readf_module.cpp last_file.cpp)
 target_link_libraries(create_image ${OpenCV_LIBS})
