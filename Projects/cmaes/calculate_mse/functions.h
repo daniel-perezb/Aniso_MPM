@@ -15,6 +15,14 @@ struct CameraParameters {
   double sensor_width_mm;
   double sensor_height_mm;
 };
+
+// Enum for selecting the viewpoint
+enum Viewpoint {
+  XY_VIEW, // Top-down view (Z-axis projection)
+  XZ_VIEW, // View from Y-axis
+  YZ_VIEW  // View from X-axis
+};
+
 /**
 Compute MSE between two set of points
 @return MSE error
@@ -27,13 +35,6 @@ Find closest point between TAPIR and simulation frames
 */
 std::pair<TV, int> findClosestPoint(const std::vector<double> &interestPoint,
                                     const std::vector<TV> &XP_data);
-
-/**
-Writes data to a txt for debuging purposses (No longer used)
-@return txt file
-*/
-void writeDataToFile(const std::string &filename,
-                     const std::vector<std::vector<double>> &data);
 
 /**
 Read file from a txt
@@ -52,7 +53,8 @@ Read the data from TAPIR files
 @return data from TAPIR
 */
 std::vector<std::vector<double>> readData(const std::string &dataFile,
-                                          const std::string &visiblesFile);
+                                          const std::string &visiblesFile, int num_files, 
+                                          int &animation_frame_rate, int &TAPIR_frame_rate);
 
 /**
 Crop the data from TAPIR based on the frame rate from simulation and TAPIR
@@ -76,5 +78,11 @@ Rescale data from TAPIR to match the simulation parameters
 */
 std::vector<std::vector<double>>
 rescaleData(const std::vector<std::vector<double>> &data, const std::string &filename, const std::string &camera_filename);
+
+/**
+Find the last file in the output directory
+@return last file num
+*/
+int findLastFileNumber(); 
 
 #endif

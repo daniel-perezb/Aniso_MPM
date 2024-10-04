@@ -6,20 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-// Function to find the last file number instead of hyperparameter
-int findLastFileNumber() {
-  int lastFileNumber = 0;
-  for (int i = 0; i < 1000; i++) {
-    std::string filename =
-        "output/RIG_fleece_fibres/data_" + std::to_string(i) + ".dat";
-    std::ifstream file(filename);
-    if (!file) {
-      lastFileNumber = i - 1;
-      break;
-    }
-  }
-  return lastFileNumber;
-}
+
 
 int main() {
 
@@ -29,12 +16,17 @@ int main() {
   
   // Read the data and remove points that are not visible at some point in the
   // video
-  std::vector<std::vector<double>> data =
-      readData(dataFilePath, visiblesFilePath);
-
-  // Crop frame rate based on animation frames and TAPIR frames
   int animation_frame_rate = 1;
   int TAPIR_frame_rate = 10;
+  // Value below is obtained using the number of frames desired for the output
+  // simulation
+  int num_files = findLastFileNumber();
+  
+  // Read the data and remvoe points that are not visible at some point before end frame
+  std::vector<std::vector<double>> data =
+  readData(dataFilePath, visiblesFilePath, num_files, animation_frame_rate, TAPIR_frame_rate);
+
+  // Crop frame rate based on animation frames and TAPIR frames
   std::vector<std::vector<double>> croppedData =
       cropData(data, animation_frame_rate, TAPIR_frame_rate);
 
@@ -65,10 +57,6 @@ int main() {
       all_data.push_back(closestPoint);
     }
   }
-
-  // Value below is obtained using the number of frames desired for the output
-  // simulation
-  int num_files = findLastFileNumber();
 
   std::vector<TV> new_data;
   std::vector<TV> final_values;
